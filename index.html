@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Responsive PhotoBooth</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f0f0f5;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+    }
+
+    h2 {
+      color: #333;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    #photobooth-container {
+      position: relative;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+      max-width: 450px;
+      margin-bottom: 20px;
+    }
+
+    video,
+    canvas.mainCanvas {
+      width: 100%;
+      max-width: 400px;
+      height: auto;
+      border-radius: 12px;
+      box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+      border: 2px solid #ccc;
+    }
+
+    video {
+      transform: scaleX(1); /* non-mirror */
+    }
+
+    canvas.mainCanvas {
+      display: none;
+      position: absolute;
+      top: 0;
+      left: 0;
+    }
+
+    #countdown {
+      position: absolute;
+      top: 40%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 60px;
+      font-weight: bold;
+      color: #ff4c4c;
+      text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.5);
+      pointer-events: none;
+    }
+
+    .buttons {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-bottom: 20px;
+      width: 100%;
+      max-width: 450px;
+    }
+
+    button {
+      background: #4CAF50;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      font-size: 14px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: 0.3s;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+    }
+
+    button:hover {
+      background: #45a049;
+      transform: translateY(-2px);
+    }
+
+    #preview-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 15px;
+      justify-content: center;
+    }
+
+    .preview-img {
+      width: 100%;
+      max-width: 120px;
+      height: auto;
+      border-radius: 8px;
+      border: 2px solid #aaa;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    }
+
+    .final-card {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+      justify-content: center;
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+      margin-top: 20px;
+      display: none;
+      width: 100%;
+      max-width: 700px;
+    }
+
+    .final-card img {
+      width: 100%;
+      max-width: 200px;
+      height: auto;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    }
+
+    /* Media Queries untuk layar kecil */
+    @media screen and (max-width: 480px) {
+      video,
+      canvas.mainCanvas {
+        max-width: 300px;
+      }
+
+      .preview-img,
+      .final-card img {
+        max-width: 100px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <h2>Responsive PhotoBooth</h2>
+
+  <div id="photobooth-container">
+    <video id="webCamVideo" autoplay></video>
+    <canvas class="mainCanvas" id="webCamCanvas"></canvas>
+    <div id="countdown"></div>
+    <div id="preview-container"></div>
+  </div>
+
+  <div class="buttons">
+    <button id="startBtn">Mulai Kamera</button>
+    <button id="captureBtn">Ambil Gambar</button>
+  </div>
+
+  <div class="final-card" id="finalCard"></div>
+
+  <script>
+    const dzikaWebVideo = document.querySelector("#webCamVideo");
+    const dzikaWebCanvas = document.querySelector("#webCamCanvas");
+    const countdownEl = document.querySelector("#countdown");
+    const photoboothContainer = document.getElementById("photobooth-container");
+    const finalCard = document.getElementById("finalCard");
+    const startBtn = document.getElementById("startBtn");
+    const captureBtn = document.getElementById("captureBtn");
+    const previewContainer = document.getElementById("preview-container");
+    const buttonsContainer = document.querySelector(".buttons");
+
+    let photos = [];
+    let stream = null;
+
+    captureBtn.disabled = true;
+
+    startBtn.onclick = async () => {
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+        dzikaWebVideo.srcObject = stream;
+        photoboothContainer.style.display = "flex";
+        captureBtn.disabled = false;
+        photos = [];
+        finalCard.style.display = "none";
+        finalCard.innerHTML = "";
+        previewContainer.innerHTML = "";
+        buttonsContainer.style.display = "flex";
+      } catch (error) {
+        alert("Gagal mengakses webcam: " + error);
+      }
+    };
+
+    captureBtn.onclick = () => {
+      if (photos.length >= 3) return;
+
+      let count = 3;
+      countdownEl.textContent = count;
+
+      const timer = setInterval(() => {
+        count--;
+        if (count > 0) {
+          countdownEl.textContent = count;
+        } else {
+          clearInterval(timer);
+          countdownEl.textContent = "";
+          ambilGambar();
+        }
+      }, 1000);
+    };
+
+    function ambilGambar() {
+      dzikaWebCanvas.style.display = "block";
+      const ctx = dzikaWebCanvas.getContext("2d");
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.drawImage(dzikaWebVideo, 0, 0, dzikaWebCanvas.width, dzikaWebCanvas.height);
+      const imageData = dzikaWebCanvas.toDataURL("image/jpeg");
+      photos.push(imageData);
+
+      // preview mini sementara
+      const previewImg = document.createElement("img");
+      previewImg.src = imageData;
+      previewImg.className = "preview-img";
+      previewContainer.appendChild(previewImg);
+
+      setTimeout(() => {
+        dzikaWebCanvas.style.display = "none";
+      }, 500);
+
+      if (photos.length >= 3) {
+        // matikan kamera
+        if (stream) {
+          stream.getTracks().forEach(track => track.stop());
+          dzikaWebVideo.srcObject = null;
+        }
+        captureBtn.disabled = true;
+
+        // sembunyikan kamera, preview, tombol
+        photoboothContainer.style.display = "none";
+        buttonsContainer.style.display = "none";
+
+        // tampilkan final card
+        finalCard.innerHTML = "";
+        photos.forEach(photo => {
+          const img = document.createElement("img");
+          img.src = photo;
+          finalCard.appendChild(img);
+        });
+        finalCard.style.display = "flex";
+      }
+    }
+  </script>
+</body>
+
+</html>
