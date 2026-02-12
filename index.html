@@ -3,206 +3,225 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Photobooth Dzika</title>
+<title>PhotoBooth</title>
 
 <style>
-body {
+body{
   margin:0;
-  font-family: 'Poppins', sans-serif;
-  background: linear-gradient(135deg,#667eea,#764ba2);
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  min-height:100vh;
-}
-
-.container {
-  background:white;
-  padding:20px;
-  border-radius:20px;
-  box-shadow:0 15px 40px rgba(0,0,0,0.25);
-  width:100%;
-  max-width:420px;
-  text-align:center;
-}
-
-/* Camera */
-.video-wrapper {
-  width:100%;
-  border-radius:15px;
-  overflow:hidden;
-}
-
-video {
-  width:100%;
-  height:auto;
-  display:block;
-  border-radius:15px;
-}
-
-/* Button */
-button {
-  margin-top:15px;
-  padding:12px 25px;
-  border:none;
-  border-radius:30px;
-  background:#667eea;
-  color:white;
-  font-size:16px;
-  cursor:pointer;
-  transition:0.3s;
-}
-
-button:hover {
-  background:#5a67d8;
-}
-
-/* Preview */
-.preview-wrapper {
-  margin-top:20px;
+  font-family:Arial, sans-serif;
+  background:#f5f7fa;
   display:flex;
   flex-direction:column;
-  gap:15px;
+  align-items:center;
+  padding:20px;
 }
 
-.preview-wrapper img {
+h2{
+  margin-bottom:20px;
+}
+
+.container{
+  width:100%;
+  max-width:420px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+}
+
+#photobooth-container{
+  position:relative;
+  display:none;
+  width:100%;
+}
+
+video{
   width:100%;
   border-radius:15px;
-  object-fit:cover;
+  box-shadow:0 8px 20px rgba(0,0,0,0.15);
+  transform:scaleX(1); /* tidak mirror */
 }
 
-/* Result Card */
-.result-card {
+#countdown{
+  position:absolute;
+  top:50%;
+  left:50%;
+  transform:translate(-50%, -50%);
+  font-size:70px;
+  font-weight:bold;
+  color:white;
+  text-shadow:0 4px 15px rgba(0,0,0,0.7);
+}
+
+.buttons{
+  display:flex;
+  gap:10px;
   margin-top:20px;
-  background:#f9f9f9;
-  padding:15px;
-  border-radius:20px;
-  box-shadow:0 10px 30px rgba(0,0,0,0.15);
+  flex-wrap:wrap;
+  justify-content:center;
+}
+
+button{
+  padding:10px 20px;
+  border:none;
+  border-radius:8px;
+  cursor:pointer;
+  font-size:14px;
+  transition:0.2s;
+}
+
+#startBtn{
+  background:#222;
+  color:white;
+}
+
+#captureBtn{
+  background:#4CAF50;
+  color:white;
+}
+
+button:hover{
+  opacity:0.85;
+}
+
+#preview-container{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  margin-top:15px;
+}
+
+.preview-img{
+  width:100%;
+  border-radius:10px;
+  box-shadow:0 5px 15px rgba(0,0,0,0.15);
+}
+
+.final-card{
   display:none;
   flex-direction:column;
   gap:15px;
-}
-
-.result-card img {
-  width:100%;
+  margin-top:20px;
+  background:white;
+  padding:20px;
   border-radius:15px;
-  object-fit:cover;
+  box-shadow:0 15px 35px rgba(0,0,0,0.2);
 }
 
-/* Responsive */
-@media (max-width:480px){
-  .container{
-    max-width:95%;
+.final-card img{
+  width:100%;
+  border-radius:12px;
+}
+
+/* Responsive kecil */
+@media(max-width:480px){
+  video{
+    border-radius:12px;
   }
 }
 </style>
 </head>
+
 <body>
+
+<h2>PhotoBooth</h2>
 
 <div class="container">
 
-  <!-- CAMERA -->
-  <div id="cameraSection">
-    <div class="video-wrapper">
-      <video id="video" autoplay playsinline></video>
-    </div>
-    <button id="captureBtn">Ambil Foto (3)</button>
-
-    <!-- PREVIEW (dibawah button) -->
-    <div class="preview-wrapper" id="previewWrapper"></div>
+  <div id="photobooth-container">
+    <video id="webCamVideo" autoplay playsinline></video>
+    <div id="countdown"></div>
+    <div id="preview-container"></div>
   </div>
 
-  <!-- RESULT -->
-  <div class="result-card" id="resultCard"></div>
+  <div class="buttons">
+    <button id="startBtn">Mulai Kamera</button>
+    <button id="captureBtn" disabled>Ambil Foto</button>
+  </div>
+
+  <div class="final-card" id="finalCard"></div>
 
 </div>
 
 <script>
-const video = document.getElementById('video');
-const captureBtn = document.getElementById('captureBtn');
-const previewWrapper = document.getElementById('previewWrapper');
-const resultCard = document.getElementById('resultCard');
-const cameraSection = document.getElementById('cameraSection');
+const video = document.getElementById("webCamVideo");
+const countdownEl = document.getElementById("countdown");
+const container = document.getElementById("photobooth-container");
+const startBtn = document.getElementById("startBtn");
+const captureBtn = document.getElementById("captureBtn");
+const previewContainer = document.getElementById("preview-container");
+const finalCard = document.getElementById("finalCard");
 
-let photoCount = 0;
 let photos = [];
-let stream;
+let stream = null;
 
-/* Start Camera */
-navigator.mediaDevices.getUserMedia({ video: true })
-.then(s => {
-  stream = s;
-  video.srcObject = stream;
-});
+startBtn.onclick = async () => {
+  try{
+    stream = await navigator.mediaDevices.getUserMedia({video:true});
+    video.srcObject = stream;
+    container.style.display = "block";
+    captureBtn.disabled = false;
+    photos = [];
+    previewContainer.innerHTML = "";
+    finalCard.style.display = "none";
+    finalCard.innerHTML = "";
+  }catch(err){
+    alert("Tidak bisa akses kamera");
+  }
+};
 
-/* Capture */
-captureBtn.addEventListener('click', () => {
+captureBtn.onclick = () => {
+  if(photos.length >= 3) return;
 
-  if(photoCount >= 3) return;
+  let count = 3;
+  countdownEl.textContent = count;
 
-  let countdown = 3;
-  captureBtn.innerText = countdown;
-
-  const timer = setInterval(() => {
-    countdown--;
-    captureBtn.innerText = countdown;
-
-    if(countdown === 0){
+  const timer = setInterval(()=>{
+    count--;
+    if(count > 0){
+      countdownEl.textContent = count;
+    }else{
       clearInterval(timer);
-      captureBtn.innerText = `Ambil Foto (${3 - photoCount - 1})`;
-      takePhoto();
+      countdownEl.textContent = "";
+      ambilFoto();
     }
   },1000);
+};
 
-});
+function ambilFoto(){
 
-function takePhoto(){
-
-  const canvas = document.createElement('canvas');
-
-  // IKUTI RASIO ASLI KAMERA (ANTI GEPENG)
+  const canvas = document.createElement("canvas");
   canvas.width = video.videoWidth;
   canvas.height = video.videoHeight;
 
-  const ctx = canvas.getContext('2d');
+  const ctx = canvas.getContext("2d");
+  ctx.drawImage(video,0,0,canvas.width,canvas.height);
 
-  // TANPA MIRROR
-  ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-  const imgData = canvas.toDataURL('image/png');
+  const imgData = canvas.toDataURL("image/jpeg");
   photos.push(imgData);
 
-  // PREVIEW SEBELUM 3 FOTO
-  if(photoCount < 2){
-    const img = document.createElement('img');
+  if(photos.length < 3){
+    const img = document.createElement("img");
     img.src = imgData;
-    previewWrapper.appendChild(img);
+    img.className = "preview-img";
+    previewContainer.appendChild(img);
   }
 
-  photoCount++;
+  if(photos.length === 3){
 
-  if(photoCount === 3){
-    finishSession();
+    stream.getTracks().forEach(track => track.stop());
+    video.srcObject = null;
+
+    container.style.display = "none";
+    document.querySelector(".buttons").style.display = "none";
+
+    photos.forEach(photo=>{
+      const img = document.createElement("img");
+      img.src = photo;
+      finalCard.appendChild(img);
+    });
+
+    finalCard.style.display = "flex";
   }
-}
-
-function finishSession(){
-
-  // Matikan kamera
-  stream.getTracks().forEach(track => track.stop());
-
-  // Sembunyikan camera & preview
-  cameraSection.style.display = "none";
-
-  // Tampilkan card hasil
-  resultCard.style.display = "flex";
-
-  photos.forEach(photo => {
-    const img = document.createElement('img');
-    img.src = photo;
-    resultCard.appendChild(img);
-  });
-
 }
 </script>
 
