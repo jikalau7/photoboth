@@ -1,263 +1,154 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Responsive PhotoBooth Column</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f0f0f5;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 20px;
-    }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Photobooth Column True Ratio</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    background: #f0f0f5;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+  }
 
-    h2 {
-      color: #333;
-      margin-bottom: 20px;
-      text-align: center;
-    }
+  h2 { text-align: center; color:#333; margin-bottom:20px;}
 
-    #photobooth-container {
-      position: relative;
-      display: none;
-      flex-direction: column;
-      align-items: center;
-      width: 100%;
-      max-width: 450px;
-      margin-bottom: 20px;
-    }
+  #photobooth-container {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    max-width: 450px;
+    margin-bottom: 20px;
+  }
 
-    video,
-    canvas.mainCanvas {
-      width: 100%;
-      max-width: 400px;
-      height: auto;
-      border-radius: 12px;
-      box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
-      border: 2px solid #ccc;
-    }
+  video { 
+    width: 100%; 
+    border-radius: 12px;
+    box-shadow:0 6px 15px rgba(0,0,0,0.2);
+    border:2px solid #ccc;
+    transform: scaleX(1); /* non-mirror */
+  }
 
-    video {
-      transform: scaleX(1);
-    }
+  canvas.mainCanvas { display:none; }
 
-    canvas.mainCanvas {
-      display: none;
-      position: absolute;
-      top: 0;
-      left: 0;
-    }
+  #countdown {
+    position: absolute; top:40%; left:50%;
+    transform:translate(-50%,-50%);
+    font-size:60px; font-weight:bold;
+    color:#ff4c4c; text-shadow:2px 2px 8px rgba(0,0,0,0.5);
+    pointer-events:none;
+  }
 
-    #countdown {
-      position: absolute;
-      top: 40%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      font-size: 60px;
-      font-weight: bold;
-      color: #ff4c4c;
-      text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.5);
-      pointer-events: none;
-    }
+  .buttons { display:flex; gap:10px; flex-wrap:wrap; justify-content:center; margin-bottom:20px; width:100%; max-width:450px;}
+  button { background:#4CAF50; color:white; border:none; padding:10px 20px; border-radius:8px; cursor:pointer; transition:.3s; box-shadow:0 4px 6px rgba(0,0,0,0.2);}
+  button:hover { background:#45a049; transform:translateY(-2px); }
 
-    .buttons {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      justify-content: center;
-      margin-bottom: 20px;
-      width: 100%;
-      max-width: 450px;
-    }
+  #preview-container { display:flex; flex-wrap:wrap; gap:10px; margin-top:15px; justify-content:center; }
 
-    button {
-      background: #4CAF50;
-      color: white;
-      border: none;
-      padding: 10px 20px;
-      font-size: 14px;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: 0.3s;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
-    }
+  .preview-img { width:100%; max-width:120px; height:auto; border-radius:8px; border:2px solid #aaa; box-shadow:0 4px 10px rgba(0,0,0,0.2); }
 
-    button:hover {
-      background: #45a049;
-      transform: translateY(-2px);
-    }
+  .final-card { display:flex; flex-direction:column; gap:15px; align-items:center; background:white; padding:20px; border-radius:12px; box-shadow:0 10px 25px rgba(0,0,0,0.3); margin-top:20px; width:90%; max-width:400px; display:none; }
+  .final-card img { width:100%; height:auto; border-radius:12px; box-shadow:0 4px 10px rgba(0,0,0,0.2); }
 
-    #preview-container {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-top: 15px;
-      justify-content: center;
-    }
-
-    .preview-img {
-      width: 100%;
-      max-width: 120px;
-      height: auto;
-      border-radius: 8px;
-      border: 2px solid #aaa;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-    }
-
-    .final-card {
-      display: flex;
-      flex-direction: column;
-      gap: 15px;
-      align-items: center;
-      background: white;
-      padding: 20px;
-      border-radius: 12px;
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
-      margin-top: 20px;
-      width: 90%;
-      max-width: 400px;
-      display: none;
-    }
-
-    .final-card img {
-      width: 100%;
-      max-width: 300px;
-      height: auto;
-      border-radius: 12px;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-    }
-
-    /* Responsive untuk layar sangat kecil */
-    @media screen and (max-width: 480px) {
-      .final-card {
-        padding: 10px;
-      }
-
-      .final-card img,
-      .preview-img {
-        max-width: 90%;
-      }
-
-      video,
-      canvas.mainCanvas {
-        max-width: 300px;
-      }
-    }
-  </style>
+  @media screen and (max-width:480px){
+    .final-card img, .preview-img { max-width:90%; }
+    video { max-width:300px; }
+  }
+</style>
 </head>
-
 <body>
-  <h2>Responsive PhotoBooth Column</h2>
+<h2>Photobooth Column True Ratio</h2>
 
-  <div id="photobooth-container">
-    <video id="webCamVideo" autoplay></video>
-    <canvas class="mainCanvas" id="webCamCanvas"></canvas>
-    <div id="countdown"></div>
-    <div id="preview-container"></div>
-  </div>
+<div id="photobooth-container">
+  <video id="webCamVideo" autoplay></video>
+  <canvas class="mainCanvas" id="webCamCanvas"></canvas>
+  <div id="countdown"></div>
+  <div id="preview-container"></div>
+</div>
 
-  <div class="buttons">
-    <button id="startBtn">Mulai Kamera</button>
-    <button id="captureBtn">Ambil Gambar</button>
-  </div>
+<div class="buttons">
+  <button id="startBtn">Mulai Kamera</button>
+  <button id="captureBtn">Ambil Gambar</button>
+</div>
 
-  <div class="final-card" id="finalCard"></div>
+<div class="final-card" id="finalCard"></div>
 
-  <script>
-    const dzikaWebVideo = document.querySelector("#webCamVideo");
-    const dzikaWebCanvas = document.querySelector("#webCamCanvas");
-    const countdownEl = document.querySelector("#countdown");
-    const photoboothContainer = document.getElementById("photobooth-container");
-    const finalCard = document.getElementById("finalCard");
-    const startBtn = document.getElementById("startBtn");
-    const captureBtn = document.getElementById("captureBtn");
-    const previewContainer = document.getElementById("preview-container");
-    const buttonsContainer = document.querySelector(".buttons");
+<script>
+const video = document.getElementById("webCamVideo");
+const canvas = document.getElementById("webCamCanvas");
+const countdownEl = document.getElementById("countdown");
+const photoboothContainer = document.getElementById("photobooth-container");
+const finalCard = document.getElementById("finalCard");
+const startBtn = document.getElementById("startBtn");
+const captureBtn = document.getElementById("captureBtn");
+const previewContainer = document.getElementById("preview-container");
+const buttonsContainer = document.querySelector(".buttons");
 
-    let photos = [];
-    let stream = null;
+let photos = [];
+let stream = null;
 
-    captureBtn.disabled = true;
+captureBtn.disabled = true;
 
-    startBtn.onclick = async () => {
-      try {
-        stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
-        dzikaWebVideo.srcObject = stream;
-        photoboothContainer.style.display = "flex";
-        captureBtn.disabled = false;
-        photos = [];
-        finalCard.style.display = "none";
-        finalCard.innerHTML = "";
-        previewContainer.innerHTML = "";
-        buttonsContainer.style.display = "flex";
-      } catch (error) {
-        alert("Gagal mengakses webcam: " + error);
-      }
-    };
+startBtn.onclick = async () => {
+  try{
+    stream = await navigator.mediaDevices.getUserMedia({video:true,audio:false});
+    video.srcObject = stream;
+    photoboothContainer.style.display = "flex";
+    captureBtn.disabled = false;
+    photos = [];
+    finalCard.style.display = "none"; finalCard.innerHTML = "";
+    previewContainer.innerHTML = "";
+    buttonsContainer.style.display = "flex";
+  }catch(e){ alert("Gagal akses webcam: "+e);}
+};
 
-    captureBtn.onclick = () => {
-      if (photos.length >= 3) return;
+captureBtn.onclick = ()=>{
+  if(photos.length>=3) return;
+  let count = 3; countdownEl.textContent = count;
+  const timer = setInterval(()=>{
+    count--;
+    if(count>0){ countdownEl.textContent=count; } 
+    else { clearInterval(timer); countdownEl.textContent=""; takePhoto(); }
+  },1000);
+};
 
-      let count = 3;
-      countdownEl.textContent = count;
+function takePhoto(){
+  // set canvas sesuai rasio video
+  canvas.width = video.videoWidth;
+  canvas.height = video.videoHeight;
+  const ctx = canvas.getContext("2d");
+  ctx.drawImage(video,0,0,canvas.width,canvas.height);
 
-      const timer = setInterval(() => {
-        count--;
-        if (count > 0) {
-          countdownEl.textContent = count;
-        } else {
-          clearInterval(timer);
-          countdownEl.textContent = "";
-          ambilGambar();
-        }
-      }, 1000);
-    };
+  const imageData = canvas.toDataURL("image/jpeg");
+  photos.push(imageData);
 
-    function ambilGambar() {
-      dzikaWebCanvas.style.display = "block";
-      const ctx = dzikaWebCanvas.getContext("2d");
-      ctx.setTransform(1, 0, 0, 1, 0, 0);
-      ctx.drawImage(dzikaWebVideo, 0, 0, dzikaWebCanvas.width, dzikaWebCanvas.height);
-      const imageData = dzikaWebCanvas.toDataURL("image/jpeg");
-      photos.push(imageData);
+  // preview mini
+  const previewImg = document.createElement("img");
+  previewImg.src = imageData;
+  previewImg.className = "preview-img";
+  previewContainer.appendChild(previewImg);
 
-      // preview mini sementara
-      const previewImg = document.createElement("img");
-      previewImg.src = imageData;
-      previewImg.className = "preview-img";
-      previewContainer.appendChild(previewImg);
+  if(photos.length>=3){
+    // matikan kamera
+    if(stream){ stream.getTracks().forEach(track=>track.stop()); video.srcObject=null; }
+    captureBtn.disabled=true;
+    photoboothContainer.style.display="none";
+    buttonsContainer.style.display="none";
 
-      setTimeout(() => {
-        dzikaWebCanvas.style.display = "none";
-      }, 500);
-
-      if (photos.length >= 3) {
-        // matikan kamera
-        if (stream) {
-          stream.getTracks().forEach(track => track.stop());
-          dzikaWebVideo.srcObject = null;
-        }
-        captureBtn.disabled = true;
-
-        // sembunyikan kamera, preview, tombol
-        photoboothContainer.style.display = "none";
-        buttonsContainer.style.display = "none";
-
-        // tampilkan final card (kolom)
-        finalCard.innerHTML = "";
-        photos.forEach(photo => {
-          const img = document.createElement("img");
-          img.src = photo;
-          finalCard.appendChild(img);
-        });
-        finalCard.style.display = "flex";
-      }
-    }
-  </script>
+    // tampilkan final card (column)
+    finalCard.innerHTML="";
+    photos.forEach(p=>{
+      const img=document.createElement("img");
+      img.src=p;
+      finalCard.appendChild(img);
+    });
+    finalCard.style.display="flex";
+  }
+}
+</script>
 </body>
-
 </html>
