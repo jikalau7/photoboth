@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Responsive PhotoBooth</title>
+  <title>Responsive PhotoBooth Column</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -42,7 +42,7 @@
     }
 
     video {
-      transform: scaleX(1); /* non-mirror */
+      transform: scaleX(1);
     }
 
     canvas.mainCanvas {
@@ -110,45 +110,48 @@
 
     .final-card {
       display: flex;
-      align-items: center;   /* supaya foto di tengah */
-      flex-direction: column; /* ubah jadi kolom */
+      flex-direction: column;
       gap: 15px;
-      justify-content: center;
+      align-items: center;
       background: white;
       padding: 20px;
       border-radius: 12px;
       box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
       margin-top: 20px;
+      width: 90%;
+      max-width: 400px;
       display: none;
-      width: 100%;
-      max-width: 700px;
     }
 
     .final-card img {
       width: 100%;
-      max-width: 200px;
+      max-width: 300px;
       height: auto;
       border-radius: 12px;
       box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
     }
 
-    /* Media Queries untuk layar kecil */
+    /* Responsive untuk layar sangat kecil */
     @media screen and (max-width: 480px) {
+      .final-card {
+        padding: 10px;
+      }
+
+      .final-card img,
+      .preview-img {
+        max-width: 90%;
+      }
+
       video,
       canvas.mainCanvas {
         max-width: 300px;
-      }
-
-      .preview-img,
-      .final-card img {
-        max-width: 100px;
       }
     }
   </style>
 </head>
 
 <body>
-  <h2>Responsive PhotoBooth</h2>
+  <h2>Responsive PhotoBooth Column</h2>
 
   <div id="photobooth-container">
     <video id="webCamVideo" autoplay></video>
@@ -244,7 +247,7 @@
         photoboothContainer.style.display = "none";
         buttonsContainer.style.display = "none";
 
-        // tampilkan final card
+        // tampilkan final card (kolom)
         finalCard.innerHTML = "";
         photos.forEach(photo => {
           const img = document.createElement("img");
@@ -258,6 +261,3 @@
 </body>
 
 </html>
-
-
-
