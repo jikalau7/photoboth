@@ -13,19 +13,23 @@ body{
   display:flex;
   flex-direction:column;
   align-items:center;
-  padding:20px;
+  padding:10px;
+  min-height:100vh;
 }
 
 h2{
-  margin-bottom:20px;
+  margin-bottom:15px;
+  font-size:24px;
 }
 
 .container{
   width:100%;
-  max-width:420px;
+  max-width:600px;
   display:flex;
   flex-direction:column;
   align-items:center;
+  padding:0 10px;
+  box-sizing:border-box;
 }
 
 #photobooth-container{
@@ -36,9 +40,12 @@ h2{
 
 video{
   width:100%;
+  height:auto;
   border-radius:15px;
   box-shadow:0 8px 20px rgba(0,0,0,0.15);
-  transform:scaleX(1); /* tidak mirror */
+  transform:scaleX(-1);
+  display:block;
+  object-fit:cover;
 }
 
 #countdown{
@@ -55,18 +62,20 @@ video{
 .buttons{
   display:flex;
   gap:10px;
-  margin-top:20px;
+  margin-top:15px;
   flex-wrap:wrap;
   justify-content:center;
+  width:100%;
 }
 
 button{
-  padding:10px 20px;
+  padding:10px 15px;
   border:none;
   border-radius:8px;
   cursor:pointer;
-  font-size:14px;
+  font-size:13px;
   transition:0.2s;
+  white-space:nowrap;
 }
 
 #startBtn{
@@ -77,6 +86,12 @@ button{
 #captureBtn{
   background:#4CAF50;
   color:white;
+  display:none;
+}
+
+#printBtn{
+  background:#2196F3;
+  color:white;
 }
 
 button:hover{
@@ -84,16 +99,22 @@ button:hover{
 }
 
 #preview-container{
-  display:flex;
+  display:none;
   flex-direction:column;
   gap:10px;
   margin-top:15px;
+  width:100%;
+  box-sizing:border-box;
 }
 
 .preview-img{
   width:100%;
+  height:auto;
   border-radius:10px;
   box-shadow:0 5px 15px rgba(0,0,0,0.15);
+  object-fit:contain;
+  background:#f0f0f0;
+  display:block;
 }
 
 .final-card{
@@ -110,6 +131,12 @@ button:hover{
 .final-card img{
   width:100%;
   border-radius:12px;
+}
+
+.final-card button{
+  margin-top:10px;
+  padding:12px 20px;
+  font-size:16px;
 }
 
 /* Responsive kecil */
@@ -130,13 +157,14 @@ button:hover{
   <div id="photobooth-container">
     <video id="webCamVideo" autoplay playsinline></video>
     <div id="countdown"></div>
-    <div id="preview-container"></div>
   </div>
 
   <div class="buttons">
     <button id="startBtn">Mulai Kamera</button>
-    <button id="captureBtn" disabled>Ambil Foto</button>
+    <button id="captureBtn">Ambil Foto</button>
   </div>
+
+  <div id="preview-container"></div>
 
   <div class="final-card" id="finalCard"></div>
 
@@ -159,9 +187,11 @@ startBtn.onclick = async () => {
     stream = await navigator.mediaDevices.getUserMedia({video:true});
     video.srcObject = stream;
     container.style.display = "block";
-    captureBtn.disabled = false;
+    startBtn.style.display = "none";
+    captureBtn.style.display = "inline-block";
     photos = [];
     previewContainer.innerHTML = "";
+    previewContainer.style.display = "none";
     finalCard.style.display = "none";
     finalCard.innerHTML = "";
   }catch(err){
@@ -194,12 +224,14 @@ function ambilFoto(){
   canvas.height = video.videoHeight;
 
   const ctx = canvas.getContext("2d");
-  ctx.drawImage(video,0,0,canvas.width,canvas.height);
+  ctx.scale(-1, 1);
+  ctx.drawImage(video,-canvas.width,0,canvas.width,canvas.height);
 
   const imgData = canvas.toDataURL("image/jpeg");
   photos.push(imgData);
 
   if(photos.length < 3){
+    previewContainer.style.display = "flex";
     const img = document.createElement("img");
     img.src = imgData;
     img.className = "preview-img";
@@ -211,14 +243,23 @@ function ambilFoto(){
     stream.getTracks().forEach(track => track.stop());
     video.srcObject = null;
 
-    container.style.display = "none";
+    container.style.display = "block";
+    video.style.display = "none";
+    countdownEl.style.display = "none";
     document.querySelector(".buttons").style.display = "none";
+    previewContainer.style.display = "none";
 
     photos.forEach(photo=>{
       const img = document.createElement("img");
       img.src = photo;
       finalCard.appendChild(img);
     });
+
+    const printBtn = document.createElement("button");
+    printBtn.id = "printBtn";
+    printBtn.textContent = "Cetak ke PDF";
+    printBtn.onclick = () => window.print();
+    finalCard.appendChild(printBtn);
 
     finalCard.style.display = "flex";
   }
