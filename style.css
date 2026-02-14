@@ -189,6 +189,56 @@ button:hover{
   }
 }
 
+/* Mobile layout improvements */
+@media (max-width: 480px) {
+  body {
+    padding: 8px;
+  }
+
+  .container {
+    max-width: 380px;
+    padding: 0 8px;
+  }
+
+  #frameTemplate img,
+  .final-card img {
+    max-width: 320px;
+    width: 100%;
+    height: auto;
+    object-fit: contain;
+  }
+
+  .final-card {
+    max-width: 360px;
+    width: 100%;
+    padding: 12px;
+    margin: 18px auto;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.12);
+  }
+
+  .buttons {
+    width: 100%;
+    gap: 12px;
+    padding: 0 6px;
+  }
+
+  .buttons button {
+    width: 100%;
+    max-width: 360px;
+    box-sizing: border-box;
+  }
+
+  #preview-container {
+    padding: 0 6px;
+    align-items: center;
+  }
+
+  /* reduce frame preview height on small screens to avoid overflow */
+  #frameTemplate {
+    margin: 8px 0;
+  }
+}
+
 /* Print styles - show only the pink frame image (A3) */
 @media print {
   @page { size: A3 portrait; margin: 0; }
