@@ -124,8 +124,14 @@ function compositeFinalCard(photoDataUrls) {
         
         const baseArea = PHOTO_AREAS[index];
         const area = Object.assign({}, baseArea);
-        if(index === 2 && thirdPhotoMobileShift) {
-          area.y = baseArea.y - thirdPhotoMobileShift;
+        if (index === 2) {
+          if (thirdPhotoMobileShift) {
+            area.y = baseArea.y - thirdPhotoMobileShift;
+          }
+          // On mobile reduce the height of the 3rd photo by 25px to fit better
+          if (isMobile) {
+            area.height = Math.max(10, baseArea.height - 25);
+          }
         }
         
         photoImg.onload = () => {
