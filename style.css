@@ -1,0 +1,211 @@
+body{
+  margin:0;
+  font-family:Arial, sans-serif;
+  background:#f5f7fa;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  padding:10px;
+  min-height:100vh;
+}
+
+h2{
+  margin-bottom:15px;
+  font-size:24px;
+}
+
+.container{
+  width:100%;
+  max-width:600px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  padding:0 10px;
+  box-sizing:border-box;
+}
+
+#photobooth-container{
+  position:relative;
+  display:none;
+  width:100%;
+}
+
+video{
+  width:100%;
+  height:auto;
+  border-radius:15px;
+  box-shadow:0 8px 20px rgba(0,0,0,0.15);
+  transform:scaleX(-1);
+  display:block;
+  object-fit:cover;
+}
+
+#countdown{
+  position:absolute;
+  top:50%;
+  left:50%;
+  transform:translate(-50%, -50%);
+  font-size:70px;
+  font-weight:bold;
+  color:white;
+  text-shadow:0 4px 15px rgba(0,0,0,0.7);
+}
+
+.buttons{
+  display:flex;
+  gap:10px;
+  margin-top:15px;
+  flex-wrap:wrap;
+  justify-content:center;
+  width:100%;
+}
+
+button{
+  padding:10px 15px;
+  border:none;
+  border-radius:8px;
+  cursor:pointer;
+  font-size:13px;
+  transition:0.2s;
+  white-space:nowrap;
+}
+
+#startBtn{
+  background:#222;
+  color:white;
+}
+
+#captureBtn{
+  background:#4CAF50;
+  color:white;
+  display:none;
+}
+
+#printBtn{
+  background:#2196F3;
+  color:white;
+}
+
+button:hover{
+  opacity:0.85;
+}
+
+#preview-container{
+  display:none;
+  flex-direction:column;
+  gap:10px;
+  margin-top:15px;
+  width:100%;
+  box-sizing:border-box;
+  align-items:center;
+}
+
+.preview-img{
+  width:100%;
+  height:auto;
+  border-radius:10px;
+  box-shadow:0 5px 15px rgba(0,0,0,0.15);
+  object-fit:contain;
+  background:#f0f0f0;
+  display:block;
+}
+
+.final-card{
+  display:none;
+  flex-direction:column;
+  gap:15px;
+  margin:40px auto;
+  background:white;
+  padding:20px;
+  border-radius:12px;
+  box-shadow:0 15px 35px rgba(0,0,0,0.2);
+  width:90%;
+  box-sizing:border-box;
+  max-width:500px;
+  align-items:center;
+  justify-content:center;
+}
+
+.final-card img{
+  width:100%;
+  height:auto;
+  border-radius:10px;
+  box-shadow:0 4px 12px rgba(0,0,0,0.15);
+  object-fit:contain;
+  display:block;
+}
+
+.final-card button{
+  margin-top:10px;
+  padding:12px 20px;
+  font-size:16px;
+}
+
+/* Frame Selector */
+#frameSelector{
+  background:white;
+  padding:15px;
+  border-radius:12px;
+  box-shadow:0 5px 15px rgba(0,0,0,0.1);
+  margin-bottom:20px;
+  width:100%;
+  box-sizing:border-box;
+  text-align:center;
+}
+
+#frameSelector h3{
+  margin:0 0 10px 0;
+  font-size:16px;
+  color:#333;
+}
+
+#frameTemplate{
+  width:100%;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  margin:10px 0;
+}
+
+#frameTemplate img{
+  max-width:100%;
+  max-height:400px;
+  object-fit:contain;
+  border-radius:8px;
+  box-shadow:0 4px 12px rgba(0,0,0,0.15);
+}
+
+.frame-info{
+  font-size:12px;
+  color:#666;
+  margin:10px 0 0 0;
+  font-style:italic;
+}
+
+/* Responsive kecil */
+@media(max-width:480px){
+  video{
+    border-radius:12px;
+  }
+}
+
+/* Print styles - show only the pink frame image (A3) */
+@media print {
+  @page { size: A3 portrait; margin: 0; }
+  html, body { margin: 0; padding: 0; height: 100%; }
+
+  /* Hide everything by default */
+  body * { display: none !important; }
+
+  /* Show only the frame-only image we appended (#frameOnlyPrint) */
+  #frameOnlyPrint {
+    display: block !important;
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    object-fit: contain !important;
+    margin: 0 !important;
+  }
+}
