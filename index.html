@@ -1,270 +1,37 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="id">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PhotoBooth</title>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="style.css" />
+    <title>PhotoBooth</title>
+  </head>
 
-<style>
-body{
-  margin:0;
-  font-family:Arial, sans-serif;
-  background:#f5f7fa;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  padding:10px;
-  min-height:100vh;
-}
+  <body>
+    <h2>PhotoBooth</h2>
 
-h2{
-  margin-bottom:15px;
-  font-size:24px;
-}
+    <div class="container">
+      <div id="frameSelector">
+        <h3>Frame Template</h3>
+        <div id="frameTemplate"></div>
+        <p class="frame-info">Foto Anda akan masuk ke area kosong frame ini</p>
+      </div>
 
-.container{
-  width:100%;
-  max-width:600px;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  padding:0 10px;
-  box-sizing:border-box;
-}
+      <div id="photobooth-container">
+        <video id="webCamVideo" autoplay playsinline></video>
+        <div id="countdown"></div>
+      </div>
 
-#photobooth-container{
-  position:relative;
-  display:none;
-  width:100%;
-}
+      <div class="buttons">
+        <button id="startBtn">Mulai Kamera</button>
+        <button id="captureBtn">Ambil Foto</button>
+      </div>
 
-video{
-  width:100%;
-  height:auto;
-  border-radius:15px;
-  box-shadow:0 8px 20px rgba(0,0,0,0.15);
-  transform:scaleX(-1);
-  display:block;
-  object-fit:cover;
-}
+      <div id="preview-container"></div>
 
-#countdown{
-  position:absolute;
-  top:50%;
-  left:50%;
-  transform:translate(-50%, -50%);
-  font-size:70px;
-  font-weight:bold;
-  color:white;
-  text-shadow:0 4px 15px rgba(0,0,0,0.7);
-}
+      <div class="final-card" id="finalCard"></div>
+    </div>
 
-.buttons{
-  display:flex;
-  gap:10px;
-  margin-top:15px;
-  flex-wrap:wrap;
-  justify-content:center;
-  width:100%;
-}
-
-button{
-  padding:10px 15px;
-  border:none;
-  border-radius:8px;
-  cursor:pointer;
-  font-size:13px;
-  transition:0.2s;
-  white-space:nowrap;
-}
-
-#startBtn{
-  background:#222;
-  color:white;
-}
-
-#captureBtn{
-  background:#4CAF50;
-  color:white;
-  display:none;
-}
-
-#printBtn{
-  background:#2196F3;
-  color:white;
-}
-
-button:hover{
-  opacity:0.85;
-}
-
-#preview-container{
-  display:none;
-  flex-direction:column;
-  gap:10px;
-  margin-top:15px;
-  width:100%;
-  box-sizing:border-box;
-}
-
-.preview-img{
-  width:100%;
-  height:auto;
-  border-radius:10px;
-  box-shadow:0 5px 15px rgba(0,0,0,0.15);
-  object-fit:contain;
-  background:#f0f0f0;
-  display:block;
-}
-
-.final-card{
-  display:none;
-  flex-direction:column;
-  gap:15px;
-  margin-top:20px;
-  background:white;
-  padding:20px;
-  border-radius:15px;
-  box-shadow:0 15px 35px rgba(0,0,0,0.2);
-}
-
-.final-card img{
-  width:100%;
-  border-radius:12px;
-}
-
-.final-card button{
-  margin-top:10px;
-  padding:12px 20px;
-  font-size:16px;
-}
-
-/* Responsive kecil */
-@media(max-width:480px){
-  video{
-    border-radius:12px;
-  }
-}
-</style>
-</head>
-
-<body>
-
-<h2>PhotoBooth</h2>
-
-<div class="container">
-
-  <div id="photobooth-container">
-    <video id="webCamVideo" autoplay playsinline></video>
-    <div id="countdown"></div>
-  </div>
-
-  <div class="buttons">
-    <button id="startBtn">Mulai Kamera</button>
-    <button id="captureBtn">Ambil Foto</button>
-  </div>
-
-  <div id="preview-container"></div>
-
-  <div class="final-card" id="finalCard"></div>
-
-</div>
-
-<script>
-const video = document.getElementById("webCamVideo");
-const countdownEl = document.getElementById("countdown");
-const container = document.getElementById("photobooth-container");
-const startBtn = document.getElementById("startBtn");
-const captureBtn = document.getElementById("captureBtn");
-const previewContainer = document.getElementById("preview-container");
-const finalCard = document.getElementById("finalCard");
-
-let photos = [];
-let stream = null;
-
-startBtn.onclick = async () => {
-  try{
-    stream = await navigator.mediaDevices.getUserMedia({video:true});
-    video.srcObject = stream;
-    container.style.display = "block";
-    startBtn.style.display = "none";
-    captureBtn.style.display = "inline-block";
-    photos = [];
-    previewContainer.innerHTML = "";
-    previewContainer.style.display = "none";
-    finalCard.style.display = "none";
-    finalCard.innerHTML = "";
-  }catch(err){
-    alert("Tidak bisa akses kamera");
-  }
-};
-
-captureBtn.onclick = () => {
-  if(photos.length >= 3) return;
-
-  let count = 3;
-  countdownEl.textContent = count;
-
-  const timer = setInterval(()=>{
-    count--;
-    if(count > 0){
-      countdownEl.textContent = count;
-    }else{
-      clearInterval(timer);
-      countdownEl.textContent = "";
-      ambilFoto();
-    }
-  },1000);
-};
-
-function ambilFoto(){
-
-  const canvas = document.createElement("canvas");
-  canvas.width = video.videoWidth;
-  canvas.height = video.videoHeight;
-
-  const ctx = canvas.getContext("2d");
-  ctx.scale(-1, 1);
-  ctx.drawImage(video,-canvas.width,0,canvas.width,canvas.height);
-
-  const imgData = canvas.toDataURL("image/jpeg");
-  photos.push(imgData);
-
-  if(photos.length < 3){
-    previewContainer.style.display = "flex";
-    const img = document.createElement("img");
-    img.src = imgData;
-    img.className = "preview-img";
-    previewContainer.appendChild(img);
-  }
-
-  if(photos.length === 3){
-
-    stream.getTracks().forEach(track => track.stop());
-    video.srcObject = null;
-
-    container.style.display = "block";
-    video.style.display = "none";
-    countdownEl.style.display = "none";
-    document.querySelector(".buttons").style.display = "none";
-    previewContainer.style.display = "none";
-
-    photos.forEach(photo=>{
-      const img = document.createElement("img");
-      img.src = photo;
-      finalCard.appendChild(img);
-    });
-
-    const printBtn = document.createElement("button");
-    printBtn.id = "printBtn";
-    printBtn.textContent = "Cetak ke PDF";
-    printBtn.onclick = () => window.print();
-    finalCard.appendChild(printBtn);
-
-    finalCard.style.display = "flex";
-  }
-}
-</script>
-
-</body>
+    <script src="js/photoboth.js"></script>
+  </body>
 </html>
