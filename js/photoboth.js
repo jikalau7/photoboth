@@ -115,32 +115,32 @@ function compositeFinalCard(photoDataUrls) {
         }
       };
       
-      photoDataUrls.forEach((photoDataUrl, index) => {
-        if (index >= 3) return; // Max 3 photos
+      // Decide draw order: on mobile draw bottom->middle->top (2,1,0) so stacking looks different
+      const defaultOrder = [0,1,2];
+      const mobileOrder = [2,1,0];
+      let order = isMobile ? mobileOrder : defaultOrder;
+      // only keep indices that exist in photoDataUrls
+      order = order.filter(i => i < photosToLoad);
 
+      // load & draw according to order
+      order.forEach((index) => {
+        const photoDataUrl = photoDataUrls[index];
         const photoImg = new Image();
-        // Data URLs are always same-origin, do NOT set crossOrigin
-        // Setting crossOrigin on data URLs causes canvas to be tainted
-        
         const baseArea = PHOTO_AREAS[index];
         const area = Object.assign({}, baseArea);
         if (index === 2) {
           if (thirdPhotoMobileShift) {
             area.y = baseArea.y - thirdPhotoMobileShift;
           }
-          // On mobile reduce the height of the 3rd photo by 25px to fit better
           if (isMobile) {
             area.height = Math.max(10, baseArea.height - 25);
           }
         }
-        
+
         photoImg.onload = () => {
           try {
-            console.log(`✅ Photo ${index + 1} loaded:`, photoImg.width, 'x', photoImg.height);
-            
-            // Cover area: scale image so it fills the area and center-crop (no white bars)
+            console.log(`✅ Photo ${index + 1} loaded (order):`, photoImg.width, 'x', photoImg.height);
             let scale = Math.max(area.width / photoImg.width, area.height / photoImg.height);
-            // apply small extra zoom on mobile devices to avoid visible gaps due to aspect differences
             if (isMobile) scale *= 1.08;
             const drawWidth = photoImg.width * scale;
             const drawHeight = photoImg.height * scale;
@@ -149,11 +149,10 @@ function compositeFinalCard(photoDataUrls) {
 
             console.log(`📍 Drawing photo ${index + 1} at:`, { drawX, drawY, drawWidth, drawHeight });
             ctx.drawImage(photoImg, drawX, drawY, drawWidth, drawHeight);
-            
+
             loadedCount++;
             console.log(`✅ Photo ${index + 1} drawn (${loadedCount}/${photosToLoad})`);
-            
-            // All photos drawn, draw frame on top then resolve
+
             if (loadedCount === photosToLoad) {
               drawFrameOnTop();
               const result = compositeCanvas.toDataURL('image/jpeg', 0.95);
@@ -161,7 +160,7 @@ function compositeFinalCard(photoDataUrls) {
               console.log('=== FINAL COMPOSITE END ===');
               resolve(result);
             }
-            } catch(err) {
+          } catch(err) {
             console.error(`❌ Error drawing photo ${index + 1}:`, err);
             loadedCount++;
             if (loadedCount === photosToLoad) {
@@ -170,7 +169,7 @@ function compositeFinalCard(photoDataUrls) {
             }
           }
         };
-        
+
         photoImg.onerror = (e) => {
           console.error(`❌ Error loading photo ${index + 1}:`, e);
           loadedCount++;
@@ -179,7 +178,7 @@ function compositeFinalCard(photoDataUrls) {
             resolve(compositeCanvas.toDataURL('image/jpeg', 0.95));
           }
         };
-        
+
         photoImg.src = photoDataUrl;
       });
       
