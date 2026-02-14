@@ -101,7 +101,7 @@ function compositeFinalCard(photoDataUrls) {
       // Draw all 3 photos (frame will be drawn on top after photos load)
       // If on small screens, shift the 3rd photo slightly up so it fits better
       const isMobile = (typeof window !== 'undefined') && window.matchMedia && window.matchMedia('(max-width:480px)').matches;
-      const thirdPhotoMobileShift = isMobile ? 40 : 0; // px to move up on mobile
+      const thirdPhotoMobileShift = isMobile ? 60 : 0; // px to move up on mobile (increase for real device)
       let loadedCount = 0;
       const photosToLoad = Math.min(3, photoDataUrls.length);
 
@@ -133,7 +133,9 @@ function compositeFinalCard(photoDataUrls) {
             console.log(`✅ Photo ${index + 1} loaded:`, photoImg.width, 'x', photoImg.height);
             
             // Cover area: scale image so it fills the area and center-crop (no white bars)
-            const scale = Math.max(area.width / photoImg.width, area.height / photoImg.height);
+            let scale = Math.max(area.width / photoImg.width, area.height / photoImg.height);
+            // apply small extra zoom on mobile devices to avoid visible gaps due to aspect differences
+            if (isMobile) scale *= 1.08;
             const drawWidth = photoImg.width * scale;
             const drawHeight = photoImg.height * scale;
             const drawX = area.x + (area.width - drawWidth) / 2;
