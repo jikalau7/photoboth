@@ -99,6 +99,9 @@ function compositeFinalCard(photoDataUrls) {
       ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
       
       // Draw all 3 photos (frame will be drawn on top after photos load)
+      // If on small screens, shift the 3rd photo slightly up so it fits better
+      const isMobile = (typeof window !== 'undefined') && window.matchMedia && window.matchMedia('(max-width:480px)').matches;
+      const thirdPhotoMobileShift = isMobile ? 40 : 0; // px to move up on mobile
       let loadedCount = 0;
       const photosToLoad = Math.min(3, photoDataUrls.length);
 
@@ -119,7 +122,11 @@ function compositeFinalCard(photoDataUrls) {
         // Data URLs are always same-origin, do NOT set crossOrigin
         // Setting crossOrigin on data URLs causes canvas to be tainted
         
-        const area = PHOTO_AREAS[index];
+        const baseArea = PHOTO_AREAS[index];
+        const area = Object.assign({}, baseArea);
+        if(index === 2 && thirdPhotoMobileShift) {
+          area.y = baseArea.y - thirdPhotoMobileShift;
+        }
         
         photoImg.onload = () => {
           try {
